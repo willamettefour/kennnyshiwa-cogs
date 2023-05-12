@@ -113,31 +113,32 @@ class EmbedInvite(commands.Cog):
             description=(await self.config.description()).replace("{name}", self.bot.user.name),
             color=await ctx.embed_color(),
         )
-        embed.set_author(
-            name=ctx.bot.user.name, icon_url=ctx.bot.user.avatar_url_as(static_format="png")
-        )
-        embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
+        if discord.__version__[0] == 2:
+            url = ctx.bot.user.avatar.replace(size=2048, static_format=webp)
+            if ctx.bot.avatar.is_animated() is False:
+                url += "&quality=lossless"
+        else:
+            url = ctx.bot.user.avatar.url_as(size=2048)
+        embed.set_author(name=ctx.bot.user.name, icon_url=url)
+        embed.set_thumbnail(url=url)
         embed.add_field(
             name="Bot Invite",
-            value="https://discord.com/oauth2/authorize?client_id={}&scope=bot&permissions={}".format(
+            value="https://discord.com/oauth2/authorize?client_id={}&scope=bot&permissions={}&scope=bot+applications.commands".format(
                 self.bot.user.id, permissions
             ),
         )
         if support:
             embed.add_field(name="Support Server", value="{}".format(support_serv))
-        embed.set_footer(
-            text="{} made possible with the support of Red Discord Bot".format(
-                ctx.bot.user.display_name
-            ),
-            icon_url="https://cdn.discord.com/icons/133049272517001216/83b39ff510bb7c3f5aeb51270af09ad3.webp",
-        )
+        embed.set_footer(text=f"{ctx.bot.user.display_name} made possible with the support of Red Discord Bot", icon_url="https://cdn.discordapp.com/icons/133049272517001216/a_aab012f3206eb514cac0432182e9e9ec.gif?size=512")
         await ctx.send(embed=embed)
 
-
-def setup(bot):
+await def setup(bot):
     invite = EmbedInvite(bot)
     global old_invite
     old_invite = bot.get_command("invite")
     if old_invite:
         bot.remove_command(old_invite.name)
-    bot.add_cog(invite)
+    if discord.__version__[0] == "2":
+        await bot.add_cog(invite)
+    else:
+        bot.add_cog(invite)
