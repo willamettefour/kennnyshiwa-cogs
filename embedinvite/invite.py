@@ -113,12 +113,19 @@ class EmbedInvite(commands.Cog):
             description=(await self.config.description()).replace("{name}", self.bot.user.name),
             color=await ctx.embed_color(),
         )
-        if discord.__version__[0] == 2:
-            url = ctx.bot.user.avatar.replace(size=2048, static_format=webp)
-            if ctx.bot.avatar.is_animated() is False:
+        if discord.__version__[0] == "2":
+            url = str(ctx.bot.user.avatar.replace(size=2048, static_format="webp"))
+            if ctx.bot.user.avatar.is_animated() is False:
                 url += "&quality=lossless"
         else:
-            url = ctx.bot.user.avatar.url_as(size=2048)
+            url = str(ctx.bot.user.avatar_url)
+            if ctx.bot.user.is_avatar_animated() or requests.get(url).headers['content-type'] == "image/png":
+                if ctx.bot.user.is_avatar_animated():
+                    url = ctx.bot.user.avatar_url_as(format="gif", size=2048)
+                if requests.get(url).headers['content-type'] == "image/png":
+                    pass
+            else:
+                url += "&quality=lossless"
         embed.set_author(name=ctx.bot.user.name, icon_url=url)
         embed.set_thumbnail(url=url)
         embed.add_field(
@@ -132,7 +139,7 @@ class EmbedInvite(commands.Cog):
         embed.set_footer(text=f"{ctx.bot.user.display_name} made possible with the support of Red Discord Bot", icon_url="https://cdn.discordapp.com/icons/133049272517001216/a_aab012f3206eb514cac0432182e9e9ec.gif?size=512")
         await ctx.send(embed=embed)
 
-await def setup(bot):
+async def setup(bot):
     invite = EmbedInvite(bot)
     global old_invite
     old_invite = bot.get_command("invite")
