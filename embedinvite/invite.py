@@ -1,7 +1,6 @@
 # Remove command logic originally from : https://github.com/mikeshardmind/SinbadCogs/tree/v3/messagebox
 
 import discord
-
 from redbot.core import commands, checks, Config
 
 old_invite = None
